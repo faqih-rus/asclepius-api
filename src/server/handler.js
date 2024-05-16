@@ -1,5 +1,5 @@
 const predictClassification = require('../services/inferenceService');
-const storeData = require('../services/storeData');
+const crypto = require('crypto');
 
 async function postPredictHandler(request, h) {
   const { image } = request.payload;
@@ -7,11 +7,17 @@ async function postPredictHandler(request, h) {
 
   try {
     const result = await predictClassification(model, image);
-    const { id, data } = result.data;
+    const { confidenceScore, label, explanation, suggestion } = result;
+    const id = crypto.randomUUID();
+    const createdAt = new Date().toISOString();
+    const data = { id, result: label, explanation, suggestion, confidenceScore, createdAt };
 
-    await storeData(id, data);
+    const response = h.response({
+      status: 'success',
+      message: confidenceScore > 99 ? 'Model is predicted successfully.' : 'Model is predicted successfully but under threshold. Please use the correct picture',
+      data
+    });
 
-    const response = h.response(result);
     response.code(201);
     return response;
   } catch (error) {
@@ -19,6 +25,7 @@ async function postPredictHandler(request, h) {
       status: 'fail',
       message: error.message
     });
+
     errorResponse.code(error.statusCode || 500);
     return errorResponse;
   }
