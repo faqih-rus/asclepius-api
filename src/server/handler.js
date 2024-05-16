@@ -1,4 +1,5 @@
 const predictClassification = require('../services/inferenceService');
+const storeData = require('../services/storeData');
 
 async function postPredictHandler(request, h) {
   const { image } = request.payload;
@@ -6,6 +7,10 @@ async function postPredictHandler(request, h) {
 
   try {
     const result = await predictClassification(model, image);
+    const { id, data } = result.data;
+
+    await storeData(id, data);
+
     const response = h.response(result);
     response.code(201);
     return response;
