@@ -8,6 +8,7 @@ const routes = [
     options: {
       payload: {
         allow: 'multipart/form-data',
+        maxBytes: 1000000,
         multipart: true
       }
     }
@@ -15,3 +16,8 @@ const routes = [
 ]
  
 module.exports = routes;
+
+// payload: {
+//   maxBytes: 1000000, 
+//   multipart: true
+// }
