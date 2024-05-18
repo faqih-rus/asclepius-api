@@ -1,6 +1,10 @@
+const { Firestore } = require('@google-cloud/firestore');
 const predictClassification = require('../services/inferenceService');
 const crypto = require('crypto');
 const InputError = require('../exceptions/InputError');
+const { storeData } = require('../services/storeData');
+
+const firestore = new Firestore();
 
 async function postPredictHandler(request, h) {
     try {
@@ -23,11 +27,14 @@ async function postPredictHandler(request, h) {
         const createdAt = new Date().toISOString();
 
         const data = {
-            "id": id,
-            "result": label,
-            "suggestion": suggestion,
-            "createdAt": createdAt
+            id,
+            result: label,
+            suggestion,
+            createdAt
         };
+
+        // Menyimpan data prediksi
+        await storeData(id, data);
 
         const response = h.response({
             status: 'success',
@@ -57,4 +64,31 @@ async function postPredictHandler(request, h) {
     }
 }
 
-module.exports = { postPredictHandler };
+async function getHistoriesHandler(request, h) {
+    try {
+        const db = firestore;
+        const predictCollection = db.collection('predictions');
+        const snapshot = await predictCollection.get();
+        
+        // Log the size of the snapshot
+        console.log(`Fetched ${snapshot.size} documents from Firestore.`);
+        
+        const histories = snapshot.docs.map((doc) => ({
+            id: doc.id,
+            history: doc.data(),
+        }));
+
+        return h.response({
+            status: 'success',
+            data: histories,
+        }).code(200);
+    } catch (error) {
+        console.error('Error in getHistoriesHandler:', error);
+        return h.response({
+            status: 'fail',
+            message: 'Terjadi kesalahan dalam mengambil riwayat prediksi',
+        }).code(500);
+    }
+}
+
+module.exports = { postPredictHandler, getHistoriesHandler };
