@@ -2,21 +2,22 @@ require('dotenv').config();
 
 const Hapi = require('@hapi/hapi');
 const routes = require('./routes');
-const loadModel = require('./services/loadModel');
-const InputError = require('./exceptions/InputError');
-const ClientError = require('./exceptions/ClientError');
+const loadModel = require('../services/loadModel');
+const InputError = require('../exceptions/InputError');
 
 (async () => {
     const server = Hapi.server({
         port: 3000,
-        host: '0.0.0.0',  // Mengubah ke '0.0.0.0' untuk deployment
+        host: '0.0.0.0',
         routes: {
             cors: {
                 origin: ['*'],
             },
             payload: {
-                maxBytes: 1000000, // Membatasi ukuran payload ke 1MB
-                multipart: true
+                maxBytes: 1000000, // 1MB
+                parse: true,
+                multipart: true,
+                output: 'data'
             }
         },
     });
@@ -29,28 +30,21 @@ const ClientError = require('./exceptions/ClientError');
     server.ext('onPreResponse', function (request, h) {
         const response = request.response;
 
-        if (response instanceof ClientError) {
+        if (response instanceof InputError) {
             const newResponse = h.response({
                 status: 'fail',
-                message: response.message
+                message: `${response.message} Silakan gunakan foto lain.`
             });
             newResponse.code(response.statusCode);
             return newResponse;
         }
 
         if (response.isBoom) {
-            let message = 'Terjadi kesalahan dalam melakukan prediksi';
-            let statusCode = response.output.statusCode;
-
-            if (statusCode === 413) {
-                message = 'Payload content length greater than maximum allowed: 1000000';
-            }
-
             const newResponse = h.response({
                 status: 'fail',
-                message: message
+                message: response.message
             });
-            newResponse.code(statusCode);
+            newResponse.code(response.output.statusCode);
             return newResponse;
         }
 
@@ -58,5 +52,5 @@ const ClientError = require('./exceptions/ClientError');
     });
 
     await server.start();
-    console.log(`Server started at: ${server.info.uri}`);
+    console.log(`Server start at: ${server.info.uri}`);
 })();
