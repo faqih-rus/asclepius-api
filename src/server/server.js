@@ -1,9 +1,9 @@
 require('dotenv').config();
 
 const Hapi = require('@hapi/hapi');
-const routes = require('../server/routes');
-const predictClassification = require('../services/inferenceService');
-const InputError = require('../exceptions/InputError');
+const routes = require('./routes');
+const loadModel = require('./services/loadModel');
+const InputError = require('./exceptions/InputError');
 
 (async () => {
     const server = Hapi.server({
@@ -11,33 +11,36 @@ const InputError = require('../exceptions/InputError');
         host: '0.0.0.0',
         routes: {
             cors: {
-              origin: ['*'],
+                origin: ['*'],
             },
+            payload: {
+                maxBytes: 1000000, 
+                multipart: true
+            }
         },
     });
 
-    server.app.predictClassification = predictClassification;
+    const model = await loadModel();
+    server.app.model = model;
 
     server.route(routes);
 
     server.ext('onPreResponse', function (request, h) {
         const response = request.response;
 
-        if (response instanceof InputError) {
-            const newResponse = h.response({
-                status: 'fail',
-                message: `${response.message} Silakan gunakan foto lain.`
-            })
-            newResponse.code(response.statusCode)
-            return newResponse;
-        }
-
         if (response.isBoom) {
+            let message = 'Terjadi kesalahan dalam melakukan prediksi';
+            let statusCode = response.output.statusCode;
+
+            if (statusCode === 413) {
+                message = 'Payload content length greater than maximum allowed: 1000000';
+            }
+
             const newResponse = h.response({
                 status: 'fail',
-                message: response.message
-            })
-            newResponse.code(response.statusCode)
+                message: message
+            });
+            newResponse.code(statusCode);
             return newResponse;
         }
 
@@ -45,5 +48,5 @@ const InputError = require('../exceptions/InputError');
     });
 
     await server.start();
-    console.log(`Server start at: ${server.info.uri}`);
+    console.log(`Server started at: ${server.info.uri}`);
 })();
