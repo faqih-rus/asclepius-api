@@ -1,23 +1,18 @@
-const postPredictHandler = require('../server/handler');
- 
-const routes = [
-  {
-    path: '/predict',
-    method: 'POST',
-    handler: postPredictHandler,
-    options: {
-      payload: {
-        allow: 'multipart/form-data',
-        maxBytes: 1000000,
-        multipart: true
-      }
-    }
-  }
-]
- 
-module.exports = routes;
+const { postPredictHandler } = require('./handler');
 
-// payload: {
-//   maxBytes: 1000000, 
-//   multipart: true
-// }
+const routes = [
+    {
+        method: 'POST',
+        path: '/predict',
+        handler: postPredictHandler,
+        options: {
+            payload: {
+                output: 'stream',
+                parse: true,
+                allow: 'multipart/form-data'
+            }
+        }
+    }
+];
+
+module.exports = routes;
