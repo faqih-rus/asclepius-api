@@ -1,9 +1,9 @@
 const tf = require('@tensorflow/tfjs-node');
 
-async function predictClassification(model, image) {
+async function predictClassification(model, imageBuffer) {
     try {
         const tensor = tf.node
-            .decodeImage(image)
+            .decodeImage(imageBuffer)
             .resizeNearestNeighbor([224, 224])
             .expandDims()
             .toFloat();
@@ -12,7 +12,7 @@ async function predictClassification(model, image) {
         const score = await prediction.data();
         const confidenceScore = Math.max(...score) * 100;
 
-        const classes = ['Benign', 'Cancer'];
+        const classes = ['Non-Cancer', 'Cancer'];
         const classResult = tf.argMax(prediction, 1).dataSync()[0];
         const label = classes[classResult];
 
@@ -26,6 +26,7 @@ async function predictClassification(model, image) {
 
         return { confidenceScore, label, suggestion };
     } catch (error) {
+        console.error('Error in predictClassification:', error);
         throw new Error('Error in prediction');
     }
 }
