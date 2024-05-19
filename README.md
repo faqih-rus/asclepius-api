@@ -16,10 +16,12 @@ Asclepius API is a project designed to provide a backend service for medical-rel
 
 Before setting up the Asclepius API, ensure you have the following installed:
 
-- Git
-- Nodejs 20 higher/i recommend you to use NVM. 
-- Google Cloud SDK
-- WSL (if you're on Windows)
+- tensorflow.js (Mandatory)
+- Hapi.js (Mandatory)
+- Git (Mandatory)
+- Nodejs 20 higher/i recommend you to use NVM. (Mandatory)
+- Google Cloud SDK (Opsional)
+- WSL (Mandatory)
 
 ## Setup
 
