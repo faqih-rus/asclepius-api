@@ -41,7 +41,7 @@ Before setting up the Asclepius API, ensure you have the following installed:
 3. **Install dependencies:**
 
    ```sh
-   pip install -r requirements.txt
+   npm install @hapi/hapi @tensorflow/tfjs-node@3.21.1 @google-cloud/firestore dotenv
    ```
 
 ## Connecting to Your VM
