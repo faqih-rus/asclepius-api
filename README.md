@@ -17,8 +17,7 @@ Asclepius API is a project designed to provide a backend service for medical-rel
 Before setting up the Asclepius API, ensure you have the following installed:
 
 - Git
-- Python 3.8 or higher
-- Virtualenv
+- Nodejs 20 higher/i recommend you to use NVM. 
 - Google Cloud SDK
 - WSL (if you're on Windows)
 
@@ -102,7 +101,7 @@ After connecting to your VM and setting up your environment, follow these steps 
 2. **Run the API:**
 
    ```sh
-   python app.py
+   npm run start
    ```
 
 ## Contributing
